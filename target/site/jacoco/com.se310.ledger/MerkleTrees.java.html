@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MerkleTrees.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">assignment1</a> &gt; <a href="index.source.html" class="el_package">com.se310.ledger</a> &gt; <span class="el_source">MerkleTrees.java</span></div><h1>MerkleTrees.java</h1><pre class="source lang-java linenums">package com.se310.ledger;
+
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * MerkleTree Implementation
+ *
+ * @author  Nikhil GOYAL
+ * @code https://github.com/goyalnikhil02/MerkleTree/blob/master/src/com/example/MerkleTrees.java
+ */
+public class MerkleTrees {
+
+    // A list of transaction
+    List&lt;String&gt; txList;
+
+    // Merkle Root
+    String root;
+
+
+<span class="fc" id="L22">    public MerkleTrees(List&lt;String&gt; txList) {</span>
+<span class="fc" id="L23">        this.txList = txList;</span>
+<span class="fc" id="L24">        root = &quot;&quot;;</span>
+<span class="fc" id="L25">    }</span>
+
+    public void merkle_tree() {
+<span class="fc" id="L28">        List&lt;String&gt; tempTxList = new ArrayList&lt;String&gt;();</span>
+
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        for (int i = 0; i &lt; this.txList.size(); i++) {</span>
+<span class="fc" id="L31">            tempTxList.add(this.txList.get(i));</span>
+        }
+
+<span class="fc" id="L34">        List&lt;String&gt; newTxList = getNewTxList(tempTxList);</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        while (newTxList.size() != 1) {</span>
+<span class="fc" id="L36">            newTxList = getNewTxList(newTxList);</span>
+        }
+
+<span class="fc" id="L39">        this.root = newTxList.get(0);</span>
+<span class="fc" id="L40">    }</span>
+
+    private List&lt;String&gt; getNewTxList(List&lt;String&gt; tempTxList) {
+
+<span class="fc" id="L44">        List&lt;String&gt; newTxList = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L45">        int index = 0;</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        while (index &lt; tempTxList.size()) {</span>
+            // left
+<span class="fc" id="L48">            String left = tempTxList.get(index);</span>
+<span class="fc" id="L49">            index++;</span>
+
+            // right
+<span class="fc" id="L52">            String right = &quot;&quot;;</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">            if (index != tempTxList.size()) {</span>
+<span class="fc" id="L54">                right = tempTxList.get(index);</span>
+            }
+
+            // sha2 hex value
+<span class="fc" id="L58">            String sha2HexValue = getSHA2HexValue(left + right);</span>
+<span class="fc" id="L59">            newTxList.add(sha2HexValue);</span>
+<span class="fc" id="L60">            index++;</span>
+
+<span class="fc" id="L62">        }</span>
+
+<span class="fc" id="L64">        return newTxList;</span>
+    }
+
+    /**
+     * Return hex string
+     *
+     * @param str
+     * @return
+     */
+    public String getSHA2HexValue(String str) {
+        byte[] cipher_byte;
+        try {
+<span class="fc" id="L76">            MessageDigest md = MessageDigest.getInstance(&quot;SHA-256&quot;);</span>
+<span class="fc" id="L77">            md.update(str.getBytes());</span>
+<span class="fc" id="L78">            cipher_byte = md.digest();</span>
+<span class="fc" id="L79">            StringBuilder sb = new StringBuilder(2 * cipher_byte.length);</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">            for (byte b : cipher_byte) {</span>
+<span class="fc" id="L81">                sb.append(String.format(&quot;%02x&quot;, b &amp; 0xff));</span>
+            }
+<span class="fc" id="L83">            return sb.toString();</span>
+<span class="nc" id="L84">        } catch (Exception e) {</span>
+<span class="nc" id="L85">            e.printStackTrace();</span>
+        }
+
+<span class="nc" id="L88">        return &quot;&quot;;</span>
+    }
+
+    /**
+     * Get Root
+     *
+     * @return
+     */
+    public String getRoot() {
+<span class="fc" id="L97">        return this.root;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

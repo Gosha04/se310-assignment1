@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Ledger.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">assignment1</a> &gt; <a href="index.source.html" class="el_package">com.se310.ledger</a> &gt; <span class="el_source">Ledger.java</span></div><h1>Ledger.java</h1><pre class="source lang-java linenums">package com.se310.ledger;
+
+import java.util.*;
+import static java.util.Map.*;
+
+/**
+ * Ledger Class representing simple implementation of Blockchain
+ *
+ * @author  Sergey L. Sundukovskiy
+ * @version 1.0
+ */
+public class Ledger {
+    private String name;
+    private String description;
+    private String seed;
+    private static NavigableMap &lt;Integer,Block&gt; blockMap;
+    private static Block uncommittedBlock;
+
+    private static Ledger ledger;
+
+    // Initialize genesis block and the account list
+    static {
+<span class="fc" id="L23">        blockMap = new TreeMap&lt;&gt;();</span>
+<span class="fc" id="L24">        uncommittedBlock = new Block(1, &quot;&quot;);</span>
+<span class="fc" id="L25">        uncommittedBlock.addAccount(&quot;master&quot;, new Account(&quot;master&quot;, Integer.MAX_VALUE));</span>
+<span class="fc" id="L26">    }</span>
+
+    /**
+     * Create singleton of the Ledger
+     * @param name
+     * @param description
+     * @param seed
+     * @return
+     */
+    public static synchronized Ledger getInstance(String name, String description, String seed) {
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        if (ledger == null) {</span>
+<span class="fc" id="L37">            ledger = new Ledger(name, description, seed);</span>
+        }
+<span class="fc" id="L39">        return ledger;</span>
+    }
+
+    /**
+     * Private Ledger Constructor
+     * @param name
+     * @param description
+     * @param seed
+     */
+<span class="fc" id="L48">    private Ledger(String name, String description, String seed) {</span>
+<span class="fc" id="L49">        this.name = name;</span>
+<span class="fc" id="L50">        this.description = description;</span>
+<span class="fc" id="L51">        this.seed = seed;</span>
+<span class="fc" id="L52">    }</span>
+
+    /**
+     * Getter method for the name of the Ledger
+     * @return
+     */
+    public String getName() {
+<span class="nc" id="L59">        return name;</span>
+    }
+
+    /**
+     * Setter Method for the name of the Ledger
+     * @param name
+     */
+    public void setName(String name) {
+<span class="nc" id="L67">        this.name = name;</span>
+<span class="nc" id="L68">    }</span>
+
+    /**
+     * Getter Method for Ledger description
+     * @return String
+     */
+    public String getDescription() {
+<span class="nc" id="L75">        return description;</span>
+    }
+
+    /**
+     * Setter Method for Description
+     * @param description
+     */
+    public void setDescription(String description) {
+<span class="nc" id="L83">        this.description = description;</span>
+<span class="nc" id="L84">    }</span>
+
+    /**
+     * Getter Method for the seed
+     * @return String
+     */
+    public String getSeed() {
+<span class="nc" id="L91">        return seed;</span>
+    }
+
+    /**
+     * Setter Method for the seed
+     * @param seed
+     */
+    public void setSeed(String seed) {
+<span class="nc" id="L99">        this.seed = seed;</span>
+<span class="nc" id="L100">    }</span>
+
+    /**
+     * Method for creating accounts in the blockchain
+     * @param address
+     * @return Account representing account in the Blockchain
+     */
+    public Account createAccount(String address) throws LedgerException {
+
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">        if(uncommittedBlock.getAccount(address) != null){</span>
+<span class="nc" id="L110">            throw new LedgerException(&quot;Create Account&quot;, &quot;Account Already Exists&quot;);</span>
+        }
+
+<span class="fc" id="L113">        Account account = new Account(address, 0);</span>
+<span class="fc" id="L114">        uncommittedBlock.addAccount(address, account);</span>
+<span class="fc" id="L115">        return account;</span>
+    }
+
+    /**
+     * Method implementing core functionality of the Blockchain by handling given transaction
+     * @param transaction
+     * @return String representing transaction id
+     * @throws LedgerException
+     */
+    public synchronized String processTransaction(Transaction transaction) throws LedgerException {
+
+        //Check for transaction specification conditions
+<span class="pc bpc" id="L127" title="2 of 4 branches missed.">        if(transaction.getAmount() &lt; 0 || transaction.getAmount() &gt; Integer.MAX_VALUE ){</span>
+<span class="nc" id="L128">            throw new LedgerException(&quot;Process Transaction&quot;, &quot;Transaction Amount Is Out of Range&quot;);</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        } else if (transaction.getFee() &lt; 10) {</span>
+<span class="fc" id="L130">            throw new LedgerException(&quot;Process Transaction&quot;, &quot;Transaction Fee Must Be Greater Than 10&quot;);</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        } else if (transaction.getNote().length() &gt; 1024){</span>
+<span class="nc" id="L132">            throw new LedgerException(&quot;Process Transaction&quot;, &quot;Note Length Must Be Less Than 1024 Chars&quot;);</span>
+        }
+
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">        if(ledger.getTransaction(transaction.getTransactionId()) != null){</span>
+<span class="nc" id="L136">            throw new LedgerException(&quot;Process Transaction&quot;, &quot;Transaction Id Must Be Unique&quot;);</span>
+        }
+
+<span class="fc" id="L139">        Account tempPayerAccount = transaction.getPayer();</span>
+<span class="fc" id="L140">        Account tempReceiverAccount = transaction.getReceiver();</span>
+
+<span class="fc bfc" id="L142" title="All 2 branches covered.">        if(transaction.getPayer().getBalance() &lt; (transaction.getAmount() + transaction.getFee()))</span>
+<span class="fc" id="L143">            throw new LedgerException(&quot;Process Transaction&quot;, &quot;Payer Does Not Have Required Funds&quot;);</span>
+
+        //Deduct balance of the payer
+<span class="fc" id="L146">        tempPayerAccount.setBalance(tempPayerAccount.getBalance()</span>
+<span class="fc" id="L147">                - transaction.getAmount() - transaction.getFee());</span>
+        //Increase balance of the receiver
+<span class="fc" id="L149">        tempReceiverAccount.setBalance(tempReceiverAccount.getBalance() + transaction.getAmount());</span>
+
+<span class="fc" id="L151">        uncommittedBlock.getTransactionList().add(transaction);</span>
+
+        //Check to see if account blocked has reached max size
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        if (uncommittedBlock.getTransactionList().size() == 10){</span>
+
+<span class="fc" id="L156">            List&lt;String&gt; tempTxList = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L157">            tempTxList.add(seed);</span>
+
+            //Loop through the list of transaction to get the hash
+<span class="fc bfc" id="L160" title="All 2 branches covered.">            for( Transaction tempTx : uncommittedBlock.getTransactionList()){</span>
+<span class="fc" id="L161">                tempTxList.add(tempTx.toString());</span>
+<span class="fc" id="L162">            }</span>
+
+<span class="fc" id="L164">            MerkleTrees merkleTrees = new MerkleTrees(tempTxList);</span>
+<span class="fc" id="L165">            merkleTrees.merkle_tree();</span>
+<span class="fc" id="L166">            uncommittedBlock.setHash(merkleTrees.getRoot());</span>
+
+            //Commit uncommitted block
+<span class="fc" id="L169">            blockMap.put(uncommittedBlock.getBlockNumber(), uncommittedBlock);</span>
+
+            //Get committed block
+<span class="fc" id="L172">            Block committedBlock = blockMap.lastEntry().getValue();</span>
+<span class="fc" id="L173">            Map&lt;String,Account&gt; accountMap = committedBlock.getAccountBalanceMap();</span>
+
+            //Get all the accounts
+<span class="fc" id="L176">            List&lt;Account&gt; accountList = new ArrayList&lt;Account&gt;(accountMap.values());</span>
+
+            //Create next block
+<span class="fc" id="L179">            uncommittedBlock = new Block(uncommittedBlock.getBlockNumber() + 1,</span>
+<span class="fc" id="L180">                    committedBlock.getHash());</span>
+
+            //Replicate accounts
+<span class="fc bfc" id="L183" title="All 2 branches covered.">            for (Account account : accountList) {</span>
+<span class="fc" id="L184">                Account tempAccount = (Account) account.clone();</span>
+<span class="fc" id="L185">                uncommittedBlock.addAccount(tempAccount.getAddress(), tempAccount);</span>
+<span class="fc" id="L186">            }</span>
+
+            //Link to previous block
+<span class="fc" id="L189">            uncommittedBlock.setPreviousBlock(committedBlock);</span>
+        }
+
+<span class="fc" id="L192">        return transaction.getTransactionId();</span>
+    }
+
+    /**
+     * Get Account balance by address
+     * @param address
+     * @return Integer representing balance of the Account
+     * @throws LedgerException
+     */
+    public Integer getAccountBalance(String address) throws LedgerException {
+
+<span class="fc bfc" id="L203" title="All 2 branches covered.">        if(blockMap.isEmpty()){</span>
+<span class="fc" id="L204">            throw new LedgerException(&quot;Get Account Balance&quot;, &quot;Account Is Not Committed to a Block&quot;);</span>
+        }
+
+<span class="fc" id="L207">        Block block = blockMap.lastEntry().getValue();</span>
+<span class="fc" id="L208">        Account account = block.getAccount(address);</span>
+
+<span class="pc bpc" id="L210" title="1 of 2 branches missed.">        if (account == null)</span>
+<span class="nc" id="L211">            throw new LedgerException(&quot;Get Account Balance&quot;, &quot;Account Does Not Exist&quot;);</span>
+        else
+<span class="fc" id="L213">            return account.getBalance();</span>
+    }
+
+    /**
+     * Get all Account balances that are part of the Blockchain
+     * @return Map representing Accounts and balances
+     */
+    public Map&lt;String,Integer&gt; getAccountBalances(){
+
+<span class="fc bfc" id="L222" title="All 2 branches covered.">        if(blockMap.isEmpty())</span>
+<span class="fc" id="L223">            return null;</span>
+
+<span class="fc" id="L225">        Block committedBlock = blockMap.lastEntry().getValue();</span>
+<span class="fc" id="L226">        Map&lt;String,Account&gt; accountMap = committedBlock.getAccountBalanceMap();</span>
+
+<span class="fc" id="L228">        Map&lt;String, Integer&gt; balances = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L229">        List&lt;Account&gt; accountList = new ArrayList&lt;&gt;(accountMap.values());</span>
+
+<span class="fc bfc" id="L231" title="All 2 branches covered.">        for (Account account : accountList) {</span>
+<span class="fc" id="L232">            balances.put(account.getAddress(), account.getBalance());</span>
+<span class="fc" id="L233">        }</span>
+
+<span class="fc" id="L235">        return balances;</span>
+    }
+
+    /**
+     * Get Block by id
+     * @param blockNumber
+     * @return Block or Null
+     */
+    public Block getBlock (Integer blockNumber) throws LedgerException {
+<span class="fc" id="L244">        Block block = blockMap.get(blockNumber);</span>
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">        if(block == null){</span>
+<span class="nc" id="L246">            throw new LedgerException(&quot;Get Block&quot;, &quot;Block Does Not Exist&quot;);</span>
+        }
+<span class="fc" id="L248">        return block;</span>
+    }
+
+    /**
+     * Get Transaction by id
+     * @param transactionId
+     * @return Transaction or Null
+     */
+    public Transaction getTransaction (String transactionId){
+
+<span class="fc bfc" id="L258" title="All 2 branches covered.">        for ( Entry mapElement : blockMap.entrySet()) {</span>
+
+            // Finding specific transactions in the committed blocks
+<span class="fc" id="L261">            Block tempBlock = (Block) mapElement.getValue();</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">            for (Transaction transaction : tempBlock.getTransactionList()){</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">                if(transaction.getTransactionId().equals(transactionId)){</span>
+<span class="fc" id="L264">                    return transaction;</span>
+                }
+<span class="fc" id="L266">            }</span>
+<span class="fc" id="L267">        }</span>
+        // Finding specific transactions in the uncommitted block
+<span class="fc bfc" id="L269" title="All 2 branches covered.">        for (Transaction transaction : uncommittedBlock.getTransactionList()){</span>
+<span class="pc bpc" id="L270" title="1 of 2 branches missed.">            if(transaction.getTransactionId().equals(transactionId)){</span>
+<span class="nc" id="L271">                return transaction;</span>
+            }
+<span class="fc" id="L273">        }</span>
+<span class="fc" id="L274">        return null;</span>
+    }
+
+    /**
+     * Get number of Blocks in the Blockchain
+     * @return int representing number of blocks committed to Blockchain
+     */
+    public int getNumberOfBlocks(){
+<span class="nc" id="L282">        return blockMap.size();</span>
+    }
+
+    /**
+     * Method for validating Blockchain.
+     * Check each block for Hash consistency
+     * Check each block for Transaction count
+     * Check account balances against the total
+     */
+    public void validate() throws LedgerException {
+
+<span class="pc bpc" id="L293" title="1 of 2 branches missed.">        if(blockMap.isEmpty()){</span>
+<span class="nc" id="L294">            throw new LedgerException(&quot;Validate&quot;, &quot;No Block Has Been Committed&quot;);</span>
+        }
+
+<span class="fc" id="L297">        Block committedBlock = blockMap.lastEntry().getValue();</span>
+<span class="fc" id="L298">        Map&lt;String,Account&gt; accountMap = committedBlock.getAccountBalanceMap();</span>
+<span class="fc" id="L299">        List&lt;Account&gt; accountList = new ArrayList&lt;&gt;(accountMap.values());</span>
+
+<span class="fc" id="L301">        int totalBalance = 0;</span>
+<span class="fc bfc" id="L302" title="All 2 branches covered.">        for (Account account : accountList) {</span>
+<span class="fc" id="L303">            totalBalance += account.getBalance();</span>
+<span class="fc" id="L304">        }</span>
+
+<span class="fc" id="L306">        int fees = 0;</span>
+        String hash;
+<span class="fc bfc" id="L308" title="All 2 branches covered.">        for(Integer key : blockMap.keySet()){</span>
+<span class="fc" id="L309">            Block block = blockMap.get(key);</span>
+
+            //Check for Hash Consistency
+<span class="fc bfc" id="L312" title="All 2 branches covered.">            if(block.getBlockNumber() != 1)</span>
+<span class="pc bpc" id="L313" title="1 of 2 branches missed.">                if(!block.getPreviousHash().equals(block.getPreviousBlock().getHash())){</span>
+<span class="nc" id="L314">                    throw new LedgerException(&quot;Validate&quot;, &quot;Hash Is Inconsistent: &quot;</span>
+<span class="nc" id="L315">                            + block.getBlockNumber());</span>
+            }
+
+            //Check for Transaction Count
+<span class="pc bpc" id="L319" title="1 of 2 branches missed.">            if(block.getTransactionList().size() != 10){</span>
+<span class="nc" id="L320">                throw new LedgerException(&quot;Validate&quot;, &quot;Transaction Count Is Not 10 In Block: &quot;</span>
+<span class="nc" id="L321">                        + block.getBlockNumber());</span>
+            }
+
+<span class="fc bfc" id="L324" title="All 2 branches covered.">            for(Transaction transaction : block.getTransactionList()){</span>
+<span class="fc" id="L325">                fees += transaction.getFee();</span>
+<span class="fc" id="L326">            }</span>
+<span class="fc" id="L327">        }</span>
+
+<span class="fc" id="L329">        int adjustedBalance = totalBalance + fees;</span>
+
+        //Check for account balances against the total
+<span class="pc bpc" id="L332" title="1 of 2 branches missed.">        if(adjustedBalance != Integer.MAX_VALUE){</span>
+<span class="nc" id="L333">            throw new LedgerException(&quot;Validate&quot;, &quot;Balance Does Not Add Up&quot;);</span>
+        }
+
+<span class="fc" id="L336">    }</span>
+
+    /**
+     * Helper method for CommandProcessor
+     * @return current block we are working with
+     */
+    public Block getUncommittedBlock(){
+<span class="fc" id="L343">        return uncommittedBlock;</span>
+    }
+
+    /**
+     * Helper method allowing reset the state of the Ledger
+     */
+    public synchronized void reset(){
+<span class="nc" id="L350">        blockMap = new TreeMap&lt;&gt;();</span>
+<span class="nc" id="L351">        uncommittedBlock = new Block(1, &quot;&quot;);</span>
+<span class="nc" id="L352">        uncommittedBlock.addAccount(&quot;master&quot;, new Account(&quot;master&quot;, Integer.MAX_VALUE));</span>
+<span class="nc" id="L353">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
