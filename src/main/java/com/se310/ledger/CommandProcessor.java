@@ -1,4 +1,4 @@
-package com.se310.ledger.command;
+package com.se310.ledger;
 
 
 import java.io.IOException;
@@ -9,8 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import com.se310.ledger.*;
 
 /**
  * CommandProcessor class implementation designed to process individual Blockchain commands

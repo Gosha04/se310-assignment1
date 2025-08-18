@@ -1,4 +1,4 @@
-package com.se310.ledger.command;
+package com.se310.ledger;
 
 /**
  * CommandProcessorException class implementation designed display errors to the user while
