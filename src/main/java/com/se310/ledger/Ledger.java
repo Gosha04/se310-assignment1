@@ -1,7 +1,12 @@
 package com.se310.ledger;
 
-import java.util.*;
-import static java.util.Map.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 /**
  * Ledger Class representing simple implementation of Blockchain
@@ -131,6 +136,26 @@ public class Ledger {
     }
 
     /**
+     * Helper method for updating accounts when processing transaction
+     * - Maintains SRP for process Transaction method
+     * - The above should just handle transaction processing logic not the account updates
+     * @param payer
+     * @param receiver
+     * @param fee
+     * @param amount
+     * @throws LedgerException
+     */
+    public synchronized void updateAccounts (Account payer, Account receiver, Integer fee, Integer amount) throws LedgerException {
+         if(payer.getBalance() < (amount + fee))
+            throw new LedgerException("Process Transaction", "Payer Does Not Have Required Funds");
+
+        //Deduct balance of the payer
+        payer.setBalance(payer.getBalance()
+                - amount - fee);
+        //Increase balance of the receiver
+        receiver.setBalance(receiver.getBalance() + amount);
+    }
+    /**
      * Method implementing core functionality of the Blockchain by handling given transaction
      * @param transaction
      * @return String representing transaction id
@@ -154,14 +179,15 @@ public class Ledger {
         Account tempPayerAccount = transaction.getPayer();
         Account tempReceiverAccount = transaction.getReceiver();
 
-        if(transaction.getPayer().getBalance() < (transaction.getAmount() + transaction.getFee()))
-            throw new LedgerException("Process Transaction", "Payer Does Not Have Required Funds");
+        updateAccounts(tempPayerAccount, tempReceiverAccount, transaction.getFee(), transaction.getAmount());
+        // if(transaction.getPayer().getBalance() < (transaction.getAmount() + transaction.getFee()))
+        //     throw new LedgerException("Process Transaction", "Payer Does Not Have Required Funds");
 
-        //Deduct balance of the payer
-        tempPayerAccount.setBalance(tempPayerAccount.getBalance()
-                - transaction.getAmount() - transaction.getFee());
-        //Increase balance of the receiver
-        tempReceiverAccount.setBalance(tempReceiverAccount.getBalance() + transaction.getAmount());
+        // //Deduct balance of the payer
+        // tempPayerAccount.setBalance(tempPayerAccount.getBalance()
+        //         - transaction.getAmount() - transaction.getFee());
+        // //Increase balance of the receiver
+        // tempReceiverAccount.setBalance(tempReceiverAccount.getBalance() + transaction.getAmount());
 
         uncommittedBlock.getTransactionList().add(transaction);
 
