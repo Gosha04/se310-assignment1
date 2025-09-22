@@ -4,7 +4,11 @@ package com.se310.ledger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,7 +46,10 @@ public class CommandProcessor {
 
                 System.out.println("Creating Account: " + tokens.get(1));
                 try {
-                    ledger.createAccount(tokens.get(1));
+                    // Refactored for SRP
+                    Account newAcc = new Account(tokens.get(1), 0);
+                    ledger.addToLedger(newAcc);
+                    // ledger.createAccount(tokens.get(1));
                 } catch (LedgerException e) {
                     System.out.println("Failed due to: " + e.getReason());
                 }
@@ -54,7 +61,9 @@ public class CommandProcessor {
                 System.out.println("Getting Balance for: " + tokens.get(1));
                 try {
                     System.out.println("Account Balance for: " + tokens.get(1) + " is "
-                            + ledger.getAccountBalance(tokens.get(1)));
+                    // Refactored to make use of Account method getBalance()
+                            +  ledger.getLatestBlock().getAccount(tokens.get(1)).getBalance());
+                            // + ledger.getAccountBalance(tokens.get(1)));
 
                 } catch (LedgerException e) {
                     System.out.println("Failed due to: " + e.getReason());

@@ -1,12 +1,7 @@
 package com.se310.ledger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.*;
+import static java.util.Map.*;
 
 /**
  * Ledger Class representing simple implementation of Blockchain
@@ -20,8 +15,6 @@ public class Ledger {
     private String seed;
     private static NavigableMap <Integer,Block> blockMap;
     private static Block uncommittedBlock;
-    private static BlockOps bOperator;
-    private static AccountOps aOperator;
 
     private static Ledger ledger;
 
@@ -29,7 +22,7 @@ public class Ledger {
     static {
         blockMap = new TreeMap<>();
         uncommittedBlock = new Block(1, "");
-        bOperator.addAccount(uncommittedBlock, "master", new Account("master", Integer.MAX_VALUE));
+        uncommittedBlock.addAccount("master", new Account("master", Integer.MAX_VALUE));
     }
 
     /**
@@ -106,20 +99,35 @@ public class Ledger {
         this.seed = seed;
     }
 
-    /**
-     * Method for creating accounts in the blockchain
-     * @param address
-     * @return Account representing account in the Blockchain
-     */
-    public Account createAccount(String address) throws LedgerException {
+    // Directly handled by Account Constructor
+    // /**
+    //  * Method for creating accounts in the blockchain
+    //  * @param address
+    //  * @return Account representing account in the Blockchain
+    //  */
+    // public Account createAccount(String address) throws LedgerException {
 
-        if(bOperator.getAccount(uncommittedBlock, address) != null){
-            throw new LedgerException("Create Account", "Account Already Exists");
+    //     if(uncommittedBlock.getAccount(address) != null){
+    //         throw new LedgerException("Create Account", "Account Already Exists");
+    //     }
+
+    //     Account account = new Account(address, 0);
+    //     uncommittedBlock.addAccount(address, account);
+    //     return account;
+    // }
+
+    /**
+     * Method for adding account to the Blockchain
+     * @param account
+     * @throws LedgerException
+     */
+    public void addToLedger(Account account) throws LedgerException {
+
+        if(uncommittedBlock.getAccount(account.getAddress()) != null){
+            throw new LedgerException("Add To Ledger", "Account Already Exists");
         }
 
-        Account account = new Account(address, 0);
-        bOperator.addAccount(uncommittedBlock, address, account);
-        return account;
+        uncommittedBlock.addAccount(account.getAddress(), account);
     }
 
     /**
@@ -188,8 +196,8 @@ public class Ledger {
 
             //Replicate accounts
             for (Account account : accountList) {
-                Account tempAccount = (Account) aOperator.accountCopy(account);
-                bOperator.addAccount(uncommittedBlock, tempAccount.getAddress(), tempAccount);
+                Account tempAccount = (Account) account.clone();
+                uncommittedBlock.addAccount(tempAccount.getAddress(), tempAccount);
             }
 
             //Link to previous block
@@ -199,26 +207,27 @@ public class Ledger {
         return transaction.getTransactionId();
     }
 
-    /**
-     * Get Account balance by address
-     * @param address
-     * @return Integer representing balance of the Account
-     * @throws LedgerException
-     */
-    public Integer getAccountBalance(String address) throws LedgerException {
+    // Already implement by Account.getBalance()
+    // /**
+    //  * Get Account balance by address
+    //  * @param address
+    //  * @return Integer representing balance of the Account
+    //  * @throws LedgerException
+    //  */
+    // public Integer getAccountBalance(String address) throws LedgerException {
 
-        if(blockMap.isEmpty()){
-            throw new LedgerException("Get Account Balance", "Account Is Not Committed to a Block");
-        }
+    //     if(blockMap.isEmpty()){
+    //         throw new LedgerException("Get Account Balance", "Account Is Not Committed to a Block");
+    //     }
 
-        Block block = blockMap.lastEntry().getValue();
-        Account account = bOperator.getAccount(block, address);
+    //     Block block = blockMap.lastEntry().getValue();
+    //     Account account = block.getAccount(address);
 
-        if (account == null)
-            throw new LedgerException("Get Account Balance", "Account Does Not Exist");
-        else
-            return account.getBalance();
-    }
+    //     if (account == null)
+    //         throw new LedgerException("Get Account Balance", "Account Does Not Exist");
+    //     else
+    //         return account.getBalance();
+    // }
 
     /**
      * Get all Account balances that are part of the Blockchain
@@ -256,13 +265,26 @@ public class Ledger {
     }
 
     /**
+     * Get latest Block in the Blockchain
+     * - Added so we can avoid using Ledger.getAccountBalance() 
+     * @return
+     * @throws LedgerException
+     */
+    public Block getLatestBlock() throws LedgerException {
+        if(blockMap.isEmpty()){
+            throw new LedgerException("Get Latest Block", "No Block Has Been Committed");
+        }
+        return blockMap.lastEntry().getValue();
+    }
+
+    /**
      * Get Transaction by id
      * @param transactionId
      * @return Transaction or Null
      */
     public Transaction getTransaction (String transactionId){
 
-        for ( Entry mapElement : blockMap.entrySet()) {
+        for (Entry mapElement : blockMap.entrySet()) {
 
             // Finding specific transactions in the committed blocks
             Block tempBlock = (Block) mapElement.getValue();
@@ -356,6 +378,6 @@ public class Ledger {
     public synchronized void reset(){
         blockMap = new TreeMap<>();
         uncommittedBlock = new Block(1, "");
-        bOperator.addAccount(uncommittedBlock, "master", new Account("master", Integer.MAX_VALUE));
+        uncommittedBlock.addAccount("master", new Account("master", Integer.MAX_VALUE));
     }
 }
