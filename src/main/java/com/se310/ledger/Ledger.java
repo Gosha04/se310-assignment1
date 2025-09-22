@@ -21,7 +21,7 @@ public class Ledger {
     private static NavigableMap <Integer,Block> blockMap;
     private static Block uncommittedBlock;
     private static BlockOps bOperator;
-    private static AccountCopy aCopy;
+    private static AccountOps aOperator;
 
     private static Ledger ledger;
 
@@ -188,7 +188,7 @@ public class Ledger {
 
             //Replicate accounts
             for (Account account : accountList) {
-                Account tempAccount = (Account) aCopy.accountCopy(account);
+                Account tempAccount = (Account) aOperator.accountCopy(account);
                 bOperator.addAccount(uncommittedBlock, tempAccount.getAddress(), tempAccount);
             }
 
