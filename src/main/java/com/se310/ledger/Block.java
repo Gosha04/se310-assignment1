@@ -94,23 +94,25 @@ public class Block {
         return transactionList;
     }
 
-    /**
-     * Helper Method for adding Account to the Block
-     * @param address
-     * @param account
-     */
-    public void addAccount(String address, Account account){
-        this.accountBalanceMap.put(address, account);
-    }
+    // SRP Violation Moved to BlockOps: Block should not be responsible for managing accounts
+    // /**
+    //  * Helper Method for adding Account to the Block
+    //  * @param address
+    //  * @param account
+    //  */
+    // public void addAccount(String address, Account account){
+    //     this.accountBalanceMap.put(address, account);
+    // }
 
-    /**
-     * Get Account from the Blockchain given account address
-     * @param address
-     * @return
-     */
-    public Account getAccount(String address){
-        return this.accountBalanceMap.get(address);
-    }
+    // SRP Violation Moved to BlockOps: Block should not be responsible for managing accounts
+    // /**
+    //  * Get Account from the Blockchain given account address
+    //  * @param address
+    //  * @return
+    //  */
+    // public Account getAccount(String address){
+    //     return this.accountBalanceMap.get(address);
+    // }
 
     /**
      * Getter method for previous block

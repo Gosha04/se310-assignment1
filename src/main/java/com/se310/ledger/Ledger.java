@@ -1,7 +1,12 @@
 package com.se310.ledger;
 
-import java.util.*;
-import static java.util.Map.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 /**
  * Ledger Class representing simple implementation of Blockchain
@@ -15,6 +20,8 @@ public class Ledger {
     private String seed;
     private static NavigableMap <Integer,Block> blockMap;
     private static Block uncommittedBlock;
+    private static BlockOps bOperator;
+    private static AccountCopy aCopy;
 
     private static Ledger ledger;
 
@@ -22,7 +29,7 @@ public class Ledger {
     static {
         blockMap = new TreeMap<>();
         uncommittedBlock = new Block(1, "");
-        uncommittedBlock.addAccount("master", new Account("master", Integer.MAX_VALUE));
+        bOperator.addAccount(uncommittedBlock, "master", new Account("master", Integer.MAX_VALUE));
     }
 
     /**
@@ -106,12 +113,12 @@ public class Ledger {
      */
     public Account createAccount(String address) throws LedgerException {
 
-        if(uncommittedBlock.getAccount(address) != null){
+        if(bOperator.getAccount(uncommittedBlock, address) != null){
             throw new LedgerException("Create Account", "Account Already Exists");
         }
 
         Account account = new Account(address, 0);
-        uncommittedBlock.addAccount(address, account);
+        bOperator.addAccount(uncommittedBlock, address, account);
         return account;
     }
 
@@ -181,8 +188,8 @@ public class Ledger {
 
             //Replicate accounts
             for (Account account : accountList) {
-                Account tempAccount = (Account) account.clone();
-                uncommittedBlock.addAccount(tempAccount.getAddress(), tempAccount);
+                Account tempAccount = (Account) aCopy.accountCopy(account);
+                bOperator.addAccount(uncommittedBlock, tempAccount.getAddress(), tempAccount);
             }
 
             //Link to previous block
@@ -205,7 +212,7 @@ public class Ledger {
         }
 
         Block block = blockMap.lastEntry().getValue();
-        Account account = block.getAccount(address);
+        Account account = bOperator.getAccount(block, address);
 
         if (account == null)
             throw new LedgerException("Get Account Balance", "Account Does Not Exist");
@@ -349,6 +356,6 @@ public class Ledger {
     public synchronized void reset(){
         blockMap = new TreeMap<>();
         uncommittedBlock = new Block(1, "");
-        uncommittedBlock.addAccount("master", new Account("master", Integer.MAX_VALUE));
+        bOperator.addAccount(uncommittedBlock, "master", new Account("master", Integer.MAX_VALUE));
     }
 }

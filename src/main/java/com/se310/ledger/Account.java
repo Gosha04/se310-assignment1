@@ -53,11 +53,12 @@ public class Account {
         this.balance = balance;
     }
 
-    /**
-     * Method for creating an account copy
-     * @return
-     */
-    public Object clone() {
-        return new Account(this.getAddress(), this.balance);
-    }
+    // Moved to AccountCopy class to maintain SRP
+    // /**
+    //  * Method for creating an account copy
+    //  * @return
+    //  */
+    // public Object clone() {
+    //     return new Account(this.getAddress(), this.balance);
+    // }
 }
