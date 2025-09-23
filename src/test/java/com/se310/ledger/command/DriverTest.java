@@ -1,6 +1,7 @@
 package com.se310.ledger.command;
 
-import com.se310.ledger.CommandProcessor;
+import com.se310.ledger.FileProcessor;
+
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
@@ -20,7 +21,7 @@ public class DriverTest {
 
         Path path = Path.of(Objects.requireNonNull(getClass().getResource("/ledger.script")).toURI());
 
-        CommandProcessor processor = new CommandProcessor();
+        FileProcessor processor = new FileProcessor();
         processor.processCommandFile (path.toString());
     }
 }

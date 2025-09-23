@@ -359,7 +359,7 @@ public class Ledger {
         }
 
         int fees = 0;
-        String hash;
+        // String hash;
         for(Integer key : blockMap.keySet()){
             Block block = blockMap.get(key);
 
