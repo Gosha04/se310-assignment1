@@ -3,8 +3,8 @@ package com.se310.ledger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+// import java.util.ArrayList;
+// import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -22,7 +22,7 @@ public class FileProcessor extends CommandProcessor {
     public void processCommandFile(String fileName){
 
         // Does this do anything??
-        List<String> tokens = new ArrayList<>();
+        //List<String> tokens = new ArrayList<>();
 
         AtomicInteger atomicInteger = new AtomicInteger(0);
 

@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 public class CommandProcessor {
 
     private static Ledger ledger = null;
+    private static FinancialOps finOps = new FinancialOps();
 
     public static void processCommand(String command) throws CommandProcessorException {
 
@@ -65,18 +66,21 @@ public class CommandProcessor {
             }
             case "get-account-balances" -> {
                 System.out.println("Getting All Balances");
+                try {
+                    Map<String,Integer> map = finOps.getAccountBalances(ledger);
 
-                Map<String,Integer> map = ledger.getAccountBalances();
+                    if(map == null){
+                        System.out.println("No Account Has Been Committed");
+                        break;
+                    }
 
-                if(map == null){
-                    System.out.println("No Account Has Been Committed");
-                    break;
-                }
+                    Set<String> keys = new HashSet<>(map.keySet());
 
-                Set<String> keys = new HashSet<>(map.keySet());
-
-                for (String key : keys) {
-                    System.out.println("Account Balance for: " + key + " is " + map.get(key));
+                    for (String key : keys) {
+                        System.out.println("Account Balance for: " + key + " is " + map.get(key));
+                    }
+                } catch (LedgerException e) {
+                    System.out.println("Failed due to: " + e.getReason());
                 }
             }
             case "process-transaction" -> {
@@ -100,7 +104,7 @@ public class CommandProcessor {
                 Transaction tempTransaction = new Transaction(tokens.get(1), Integer.parseInt(tokens.get(3)),
                         Integer.parseInt(tokens.get(5)), tokens.get(7), payer, receiver);
                 try {
-                    ledger.processTransaction(tempTransaction);
+                    finOps.processTransaction(ledger, tempTransaction);
                 } catch (LedgerException e) {
                     System.out.println("Failed due to: " + e.getReason());
                 }

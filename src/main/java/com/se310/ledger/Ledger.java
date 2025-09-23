@@ -1,7 +1,6 @@
 package com.se310.ledger;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -135,104 +134,6 @@ public class Ledger {
         uncommittedBlock.addAccount(account.getAddress(), account);
     }
 
-    /**
-     * Helper method for updating accounts when processing transaction
-     * - Maintains SRP for process Transaction method
-     * - The above should just handle transaction processing logic not the account updates
-     * @param payer
-     * @param receiver
-     * @param fee
-     * @param amount
-     * @throws LedgerException
-     */
-    public synchronized void updateAccounts (Account payer, Account receiver, Integer fee, Integer amount) throws LedgerException {
-         if(payer.getBalance() < (amount + fee))
-            throw new LedgerException("Process Transaction", "Payer Does Not Have Required Funds");
-
-        //Deduct balance of the payer
-        payer.setBalance(payer.getBalance()
-                - amount - fee);
-        //Increase balance of the receiver
-        receiver.setBalance(receiver.getBalance() + amount);
-    }
-    /**
-     * Method implementing core functionality of the Blockchain by handling given transaction
-     * @param transaction
-     * @return String representing transaction id
-     * @throws LedgerException
-     */
-    public synchronized String processTransaction(Transaction transaction) throws LedgerException {
-
-        //Check for transaction specification conditions
-        if(transaction.getAmount() < 0 || transaction.getAmount() > Integer.MAX_VALUE ){
-            throw new LedgerException("Process Transaction", "Transaction Amount Is Out of Range");
-        } else if (transaction.getFee() < 10) {
-            throw new LedgerException("Process Transaction", "Transaction Fee Must Be Greater Than 10");
-        } else if (transaction.getNote().length() > 1024){
-            throw new LedgerException("Process Transaction", "Note Length Must Be Less Than 1024 Chars");
-        }
-
-        if(ledger.getTransaction(transaction.getTransactionId()) != null){
-            throw new LedgerException("Process Transaction", "Transaction Id Must Be Unique");
-        }
-
-        Account tempPayerAccount = transaction.getPayer();
-        Account tempReceiverAccount = transaction.getReceiver();
-
-        updateAccounts(tempPayerAccount, tempReceiverAccount, transaction.getFee(), transaction.getAmount());
-        // if(transaction.getPayer().getBalance() < (transaction.getAmount() + transaction.getFee()))
-        //     throw new LedgerException("Process Transaction", "Payer Does Not Have Required Funds");
-
-        // //Deduct balance of the payer
-        // tempPayerAccount.setBalance(tempPayerAccount.getBalance()
-        //         - transaction.getAmount() - transaction.getFee());
-        // //Increase balance of the receiver
-        // tempReceiverAccount.setBalance(tempReceiverAccount.getBalance() + transaction.getAmount());
-
-        uncommittedBlock.getTransactionList().add(transaction);
-
-        //Check to see if account blocked has reached max size
-        if (uncommittedBlock.getTransactionList().size() == 10){
-
-            List<String> tempTxList = new ArrayList<>();
-            tempTxList.add(seed);
-
-            //Loop through the list of transaction to get the hash
-            for( Transaction tempTx : uncommittedBlock.getTransactionList()){
-                tempTxList.add(tempTx.toString());
-            }
-
-            MerkleTrees merkleTrees = new MerkleTrees(tempTxList);
-            merkleTrees.merkle_tree();
-            uncommittedBlock.setHash(merkleTrees.getRoot());
-
-            //Commit uncommitted block
-            blockMap.put(uncommittedBlock.getBlockNumber(), uncommittedBlock);
-
-            //Get committed block
-            Block committedBlock = blockMap.lastEntry().getValue();
-            Map<String,Account> accountMap = committedBlock.getAccountBalanceMap();
-
-            //Get all the accounts
-            List<Account> accountList = new ArrayList<Account>(accountMap.values());
-
-            //Create next block
-            uncommittedBlock = new Block(uncommittedBlock.getBlockNumber() + 1,
-                    committedBlock.getHash());
-
-            //Replicate accounts
-            for (Account account : accountList) {
-                Account tempAccount = (Account) account.clone();
-                uncommittedBlock.addAccount(tempAccount.getAddress(), tempAccount);
-            }
-
-            //Link to previous block
-            uncommittedBlock.setPreviousBlock(committedBlock);
-        }
-
-        return transaction.getTransactionId();
-    }
-
     // Already implement by Account.getBalance()
     // /**
     //  * Get Account balance by address
@@ -256,28 +157,6 @@ public class Ledger {
     // }
 
     /**
-     * Get all Account balances that are part of the Blockchain
-     * @return Map representing Accounts and balances
-     */
-    public Map<String,Integer> getAccountBalances(){
-
-        if(blockMap.isEmpty())
-            return null;
-
-        Block committedBlock = blockMap.lastEntry().getValue();
-        Map<String,Account> accountMap = committedBlock.getAccountBalanceMap();
-
-        Map<String, Integer> balances = new HashMap<>();
-        List<Account> accountList = new ArrayList<>(accountMap.values());
-
-        for (Account account : accountList) {
-            balances.put(account.getAddress(), account.getBalance());
-        }
-
-        return balances;
-    }
-
-    /**
      * Get Block by id
      * @param blockNumber
      * @return Block or Null
@@ -288,6 +167,13 @@ public class Ledger {
             throw new LedgerException("Get Block", "Block Does Not Exist");
         }
         return block;
+    }
+
+    public NavigableMap<Integer, Block> getBlockMap() throws LedgerException{
+        if (blockMap.isEmpty()){
+            throw new LedgerException("Get Block Map", "No Block Has Been Committed");
+        }
+        return blockMap;
     }
 
     /**
