@@ -3,15 +3,14 @@ package com.se310.ledger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
 /**
  * Ledger Class representing simple implementation of Blockchain
  *
- * @author  Sergey L. Sundukovskiy
- * @version 1.0
+ * @author  Sergey L. Sundukovskiy -> Joshua Vaysman
+ * @version 1.3
  */
 public class Ledger {
     private String name;
@@ -169,6 +168,11 @@ public class Ledger {
         return block;
     }
 
+    /**
+     * Get map of all the blocks in the Blockchain
+     * @return NavigableMap representing all the blocks in the Blockchain
+     * @throws LedgerException
+     */
     public NavigableMap<Integer, Block> getBlockMap() throws LedgerException{
         if (blockMap.isEmpty()){
             throw new LedgerException("Get Block Map", "No Block Has Been Committed");
@@ -187,32 +191,6 @@ public class Ledger {
             throw new LedgerException("Get Latest Block", "No Block Has Been Committed");
         }
         return blockMap.lastEntry().getValue();
-    }
-
-    /**
-     * Get Transaction by id
-     * @param transactionId
-     * @return Transaction or Null
-     */
-    public Transaction getTransaction (String transactionId){
-
-        for (Entry mapElement : blockMap.entrySet()) {
-
-            // Finding specific transactions in the committed blocks
-            Block tempBlock = (Block) mapElement.getValue();
-            for (Transaction transaction : tempBlock.getTransactionList()){
-                if(transaction.getTransactionId().equals(transactionId)){
-                    return transaction;
-                }
-            }
-        }
-        // Finding specific transactions in the uncommitted block
-        for (Transaction transaction : uncommittedBlock.getTransactionList()){
-            if(transaction.getTransactionId().equals(transactionId)){
-                return transaction;
-            }
-        }
-        return null;
     }
 
     /**

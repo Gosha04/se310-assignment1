@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 /**
  * CommandProcessor class implementation designed to process individual Blockchain commands
  *
- * @author  Sergey L. Sundukovskiy
- * @version 1.0
+ * @author  Sergey L. Sundukovskiy -> Joshua Vaysman
+ * @version 1.2 
  */
 public class CommandProcessor {
 
@@ -133,19 +133,22 @@ public class CommandProcessor {
 
             }
             case "get-transaction" -> {
-
                 if(tokens.size() != 2)
                     throw new CommandProcessorException("get-transaction", "Missing Arguments");
 
                 System.out.println("Get Transaction: " + tokens.get(1));
-                Transaction transaction = ledger.getTransaction(tokens.get(1));
+                try {
+                    Transaction transaction = finOps.getTransaction(ledger, (tokens.get(1)));
 
-                System.out.println("Transaction ID: " + transaction.getTransactionId() + " "
-                        + "Amount: " + transaction.getAmount() + " " + "Fee: "
-                        + transaction.getFee() + " " + "Note: " + transaction.getNote() + " " + "Payer: "
-                        + transaction.getPayer().getAddress() + " " + "Receiver: "
-                        + transaction.getReceiver().getAddress()
-                );
+                    System.out.println("Transaction ID: " + transaction.getTransactionId() + " "
+                            + "Amount: " + transaction.getAmount() + " " + "Fee: "
+                            + transaction.getFee() + " " + "Note: " + transaction.getNote() + " " + "Payer: "
+                            + transaction.getPayer().getAddress() + " " + "Receiver: "
+                            + transaction.getReceiver().getAddress()
+                    );
+                } catch (LedgerException e) {
+                    System.out.println("Failed due to: " + e.getReason());
+                }
             }
             case "validate" -> {
                 System.out.print("Validate: ");

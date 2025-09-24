@@ -4,7 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
+
+/**
+ * CommandProcessorException class implementation designed display errors to the user while
+ * processing commands
+ *
+ * @author  Joshua Vaysman
+ * @version 1.0
+ */
 
 public class FinancialOps{
      /**
@@ -27,7 +36,7 @@ public class FinancialOps{
             throw new LedgerException("Process Transaction", "Note Length Must Be Less Than 1024 Chars");
         }
 
-        if(ledger.getTransaction(transaction.getTransactionId()) != null){
+        if(getTransaction(ledger, transaction.getTransactionId()) != null){
             throw new LedgerException("Process Transaction", "Transaction Id Must Be Unique");
         }
 
@@ -133,5 +142,34 @@ public class FinancialOps{
         }
 
         return balances;
+    }
+
+     /**
+     * Get Transaction by id
+     * @param transactionId
+     * @return Transaction or Null
+     */
+    public Transaction getTransaction (Ledger ledger, String transactionId) throws LedgerException {
+        if (ledger == null){
+            throw new LedgerException("Get Transaction", "Ledger is Null");
+        }
+
+        for (Entry mapElement : ledger.getBlockMap().entrySet()) {
+
+            // Finding specific transactions in the committed blocks
+            Block tempBlock = (Block) mapElement.getValue();
+            for (Transaction transaction : tempBlock.getTransactionList()){
+                if(transaction.getTransactionId().equals(transactionId)){
+                    return transaction;
+                }
+            }
+        }
+        // Finding specific transactions in the uncommitted block
+        for (Transaction transaction : ledger.getUncommittedBlock().getTransactionList()){
+            if(transaction.getTransactionId().equals(transactionId)){
+                return transaction;
+            }
+        }
+        return null;
     }
 }
